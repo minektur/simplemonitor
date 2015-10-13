@@ -28,7 +28,7 @@ class CompoundMonitor(Monitor):
             raise RuntimeError("Required configuration fields missing")
         min_fail = len(monitors)
         try:
-            min_fail = config_options["min_fail"]
+            min_fail = int(config_options["min_fail"])
         except:
             pass
         self.min_fail = min_fail
@@ -38,15 +38,22 @@ class CompoundMonitor(Monitor):
 
     def run_test(self):
         # we depend on the other tests to run, just check them
-        failcount = self.min_fail
+        tot = len(self.monitors)
+        fails = 0
         for i in self.monitors:
-            if self.m[i].get_success_count() > 0 and self.m[i].tests_run > 0:
-                failcount -=1
-        return (failcount > 0)
+            if self.m[i].virtual_fail_count() > 0:
+                fails +=1
+
+        if  (self.min_fail - fails) > 0:
+            self.record_success("%d/%d passed" % (tot - fails, tot))
+            return True
+        else:
+            self.record_fail("%d/%d passed" % (tot - fails, tot))
+            return False
 
     def describe(self):
         """Explains what we do."""
-        message = "Checking that %s tests both failed" % (self.url)
+        message = "Checking that %s tests both failed" % (self.monitors)
         return message
 
     def get_params(self):
