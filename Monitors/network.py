@@ -178,7 +178,7 @@ class MonitorHost(Monitor):
                 ping_ttl = config_options["ping_ttl"]
             except:
                 ping_ttl = "5"
-            self.ping_command = "ping -c1 -t"+ ping_ttl + " %s 2> /dev/null"
+            self.ping_command = "ping -c1 -W2 -t"+ ping_ttl + " %s 2> /dev/null"
             self.ping_regexp = "bytes from"
             #XXX this regexp is only for freebsd at the moment; not sure about other platforms
             #XXX looks like Linux uses this format too
