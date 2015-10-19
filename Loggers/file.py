@@ -68,6 +68,7 @@ class HTMLLogger(Logger):
     supports_batch = True
     filename = ""
     count_data = ""
+    hup_command = False
 
     def __init__(self, config_options = {}):
         Logger.__init__(self, config_options)
@@ -77,7 +78,11 @@ class HTMLLogger(Logger):
             self.footer = config_options["footer"]
             self.folder = config_options["folder"]
         except Exception:
-            print "Missing required value for HTML Logger" 
+            print "Missing required value for HTML Logger"
+        try:
+            self.hup_command = config_options["hup_command"]
+        except:
+            pass
 
     def save_result2(self, name, monitor):
         if not self.doing_batch:
@@ -94,7 +99,7 @@ class HTMLLogger(Logger):
             downtime = self.get_downtime(monitor)
         else:
             fail_time = ""
-            fail_count = 0 
+            fail_count = 0
             fail_data = monitor.get_result()
             downtime = ""
         failures = monitor.failures
@@ -104,7 +109,7 @@ class HTMLLogger(Logger):
             age = datetime.datetime.utcnow() - monitor.last_update
             age = age.days * 3600 + age.seconds
             update = monitor.last_update
-        except Exception, e: 
+        except Exception, e:
             age = 0
             update = ""
 
@@ -113,7 +118,7 @@ class HTMLLogger(Logger):
                 "fail_time": fail_time,
                 "fail_count": fail_count,
                 "fail_data": fail_data,
-                "downtime": downtime, 
+                "downtime": downtime,
                 "age": age,
                 "update": update,
                 "host": monitor.running_on,
@@ -121,7 +126,7 @@ class HTMLLogger(Logger):
                 "last_failure": last_failure
                 }
         self.batch_data[monitor.name] = data_line
-    
+
     def process_batch(self):
         """Save the HTML file."""
         ok_count = 0
@@ -174,8 +179,8 @@ class HTMLLogger(Logger):
             <td>%s</td>
             <td>%s</td>
             """ % (
-                monitor_name, 
-                status.lower(), status, 
+                monitor_name,
+                status.lower(), status,
                 self.batch_data[entry]["host"],
                 self.batch_data[entry]["fail_time"],
                 )
@@ -232,6 +237,12 @@ class HTMLLogger(Logger):
             shutil.move(file_name, os.path.join(self.folder, self.filename))
         except Exception, e:
             print "problem closing temporary file for HTML output", e
+        if self.hup_command:
+            try:
+                os.system(self.hup_command)
+            except:
+                pass
+
 
     def parse_file(self, file_handle):
         lines = []
