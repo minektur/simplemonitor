@@ -15,7 +15,7 @@
 			function check_age() {
 				var generated = _TIMESTAMP_;
 				var now = Date.parse(new Date()) / 1000;
-				if ((now - generated) > 60) {
+				if ((now - generated) > 120) {
 					var summary_element = document.getElementById("summary");
 					summary_element.innerHTML = "[OLD] " + summary_element.innerHTML;
 					summary_element.setAttribute("class", "stale");
